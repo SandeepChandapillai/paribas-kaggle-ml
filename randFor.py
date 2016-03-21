@@ -48,9 +48,8 @@ print(train.describe())
 #print(train.dtypes)
 
 print("Cleaning and formatting data")
-train = np.asarray(train, dtype=np.float32      
+train = np.asarray(train, dtype=np.float32)
 labels = labels.ravel()
-
 
 print("Creating training set and validation set : 90 / 10 ")
 X_train , X_valid , y_train , y_valid  = train_test_split(train , labels , test_size = 0.70 , random_state = 0 )
@@ -77,14 +76,14 @@ y_oob = est.oob_prediction_
 print "roc :" , roc_auc_score(labels , y_oob)
 
 preds = est.predict(test)
-print(preds[:,1])
+print(preds)
 
 submission = pd.read_csv('sample_submission.csv')
-submission["PredictedProb"] = preds[:,1]
+submission["PredictedProb"] = preds
 submission.to_csv('submission.csv', index=False)
 
-fea_imp = pd.Series(est.feature_importances_ , index = train.columns)
-fea_imp.sort()
-fea_imp.plot(kind="barh", figsize=(7.6))
+#fea_imp = pd.Series(est.feature_importances_ , index = train.columns)
+#fea_imp.sort()
+#fea_imp.plot(kind="barh", figsize=(7.6))
 
 
