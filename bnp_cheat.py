@@ -90,14 +90,14 @@ trainId = train["ID"]
 testId = test["ID"]
 
 #train.drop(labels = ["ID","target","v22","v107","v71","v31","v100","v63","v64"], axis = 1, inplace = True)
-#train.drop(['ID','target',"v22",'v8','v23','v25','v31','v36','v37','v46','v51','v53','v54','v63','v73','v75','v79','v81','v82','v89','v92','v95','v105','v107','v108','v109','v110','v116','v117','v118','v119','v123','v124','v128'],axis=1, inplace = True)
+train.drop(['ID','target',"v22",'v8','v23','v25','v31','v36','v37','v46','v51','v53','v54','v63','v73','v75','v79','v81','v82','v89','v92','v95','v105','v107','v108','v109','v110','v116','v117','v118','v119','v123','v124','v128'],axis=1, inplace = True)
 
-train.drop(['ID','target',"v22"],axis=1, inplace = True)
+#train.drop(['ID','target',"v22"],axis=1, inplace = True)
 
 #test.drop(labels = ["ID","v22","v107","v71","v31","v100","v63","v64"], axis = 1, inplace = True)
-#test.drop(labels = ["ID","v22",'v8','v23','v25','v31','v36','v37','v46','v51','v53','v54','v63','v73','v75','v79','v81','v82','v89','v92','v95','v105','v107','v108','v109','v110','v116','v117','v118','v119','v123','v124','v128'],axis=1, inplace = True)
+test.drop(labels = ["ID","v22",'v8','v23','v25','v31','v36','v37','v46','v51','v53','v54','v63','v73','v75','v79','v81','v82','v89','v92','v95','v105','v107','v108','v109','v110','v116','v117','v118','v119','v123','v124','v128'],axis=1, inplace = True)
 
-test.drop(labels = ["ID","v22"], axis =1 , inplace = True)
+#test.drop(labels = ["ID","v22"], axis =1 , inplace = True)
 
 #find categorical variables
 categoricalVariables = []
@@ -131,6 +131,7 @@ test, scaler = preprocess_data(test, scaler)
 train = np.asarray(train, dtype=np.float32)        
 labels = np.asarray(labels, dtype=np.int32).reshape(-1,1)
 
+
 net = NeuralNet(
     layers=[  
         ('input', InputLayer),
@@ -144,12 +145,9 @@ net = NeuralNet(
     input_shape=(None, len(train[1])),
     dropout0_p=0.1,
     hidden1_num_units=50,
-    #hidden1_W=,
+    hidden1_W=Uniform(), 
     dropout1_p=0.2, 
     hidden2_num_units=40,
-    #hidden2_W=Uniform(),
-
-    output_nonlinearity=sigmoid,
     output_num_units=1, 
     update=nesterov_momentum,
     update_learning_rate=theano.shared(np.float32(0.01)),
@@ -162,7 +160,7 @@ net = NeuralNet(
     y_tensor_type = T.imatrix,                   
     objective_loss_function = binary_crossentropy,
     #batch_iterator_train = BatchIterator(batch_size = 256),
-    max_epochs=200, 
+    max_epochs=20, 
     eval_size=0.1,
     #train_split =0.0,
     verbose=2,
@@ -180,5 +178,10 @@ preds = net.predict_proba(test)[:,0]
 submission = pd.read_csv('sample_submission.csv')
 submission["PredictedProb"] = preds
 submission.to_csv('submission.csv', index=False)
+
+print("Saving the Model")
+#https://github.com/dnouri/nolearn/issues/58 
+
+net.save_weights_to( './model/nnet_qu_150_40.pkl' )
 
 

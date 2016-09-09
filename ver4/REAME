@@ -1,0 +1,9 @@
+
+Smarter stacking :::
+
+ I will create the output of different models in csv files and then read from those csv files rather than using the models . 
+
+This will be faster and I will not have an issue of running out of ran 
+
+
+

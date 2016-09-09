@@ -63,7 +63,7 @@ print("Creating model")
 #                                          random_state=0)
 
 #est = GradientBoostingClassifier(n_estimators=500, max_depth=5 , min_samples_leaf=3)
-est = RandomForestRegressor(n_estimators=100 , oob_score = True , random_state = 42)
+est = RandomForestRegressor(n_estimators=1000 , oob_score = True , random_state = 4 , n_jobs = -1 , max_features = "auto" , min_samples_leaf = 5)
 
 print("Fitting data")
 est.fit(train,labels)

@@ -107,7 +107,7 @@ print("Creating model")
 #                                          loss='huber', min_samples_leaf=1, 
 #                                          random_state=0)
 
-est = GradientBoostingClassifier(n_estimators=500, max_depth=5 , min_samples_leaf=3)
+est = GradientBoostingClassifier(n_estimators=1000, max_depth=10 , min_samples_leaf=100)
 
 print("Fitting data")
 est.fit(train,labels)

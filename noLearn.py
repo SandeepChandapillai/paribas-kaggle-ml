@@ -1,7 +1,6 @@
 """
 Created on Tue Feb 23 12:01:21 2016
 
-@author: Ouranos
 """
 
 
@@ -16,6 +15,17 @@ from nolearn.lasagne import NeuralNet, BatchIterator
 import theano
 from theano import tensor as T
 from theano.tensor.nnet import sigmoid
+
+
+from sklearn.cross_validation import train_test_split 
+
+
+from sklearn.metrics import roc_auc_score 
+from sklearn.metrics import accuracy_score 
+from sklearn.metrics import mean_squared_error
+from sklearn.cross_validation import cross_val_score 
+
+from sklearn.feature_selection import VarianceThreshold
 
 
 class AdjustVariable(object):
@@ -131,22 +141,45 @@ test, scaler = preprocess_data(test, scaler)
 train = np.asarray(train, dtype=np.float32)        
 labels = np.asarray(labels, dtype=np.int32).reshape(-1,1)
 
+# Convert the data frame column into a single dim array 
+print("Creating training set and validation set : 90 / 10 ")
+X_train , X_valid , y_train , y_valid  = train_test_split(train , labels , test_size = 0.01 , random_state = 0 )
+
+
 net = NeuralNet(
     layers=[  
         ('input', InputLayer),
+        ('dropout0', DropoutLayer),
         ('hidden1', DenseLayer),
+        ('dropout1', DropoutLayer),
         ('hidden2', DenseLayer),
+        ('dropout2', DropoutLayer),
+        ('hidden3', DenseLayer),
+        ('dropout3', DropoutLayer),
+        ('hidden4', DenseLayer),
+        ('dropout4', DropoutLayer),
+
+        ('hidden5', DenseLayer),
         ('output', DenseLayer),
         ],
 
     input_shape=(None, len(train[1])),
-    hidden1_num_units=120,
-    hidden2_num_units=50,
+    dropout0_p=0.1,
+    hidden1_num_units=250,
+    dropout1_p=0.4,
+    hidden2_num_units=180,
+    dropout2_p=0.5,
+    hidden3_num_units=100,
+    dropout3_p=0.3,
+    hidden4_num_units=40,
+    dropout4_p=0.1,
+
+    hidden5_num_units=25,
 
     output_nonlinearity=sigmoid,
     output_num_units=1, 
     update=nesterov_momentum,
-    update_learning_rate=theano.shared(np.float32(0.1)),
+    update_learning_rate=theano.shared(np.float32(0.01)),
     update_momentum=theano.shared(np.float32(0.9)),    
     # Decay the learning rate
     on_epoch_finished=[AdjustVariable('update_learning_rate', start=0.01, stop=0.0001),
@@ -156,7 +189,7 @@ net = NeuralNet(
     y_tensor_type = T.imatrix,                   
     objective_loss_function = binary_crossentropy,
     #batch_iterator_train = BatchIterator(batch_size = 256),
-    max_epochs=20, 
+    max_epochs=50, 
     eval_size=0.1,
     #train_split =0.0,
     verbose=2,
@@ -165,14 +198,23 @@ net = NeuralNet(
 
 seednumber=1235
 np.random.seed(seednumber)
-net.fit(train, labels)
+net.fit(X_train, y_train)
+
+
+print(" Validate Model ")
+pred_valid_y = net.predict_proba(X_valid)[:,0]
+
+mse = mean_squared_error(y_valid,pred_valid_y)
+print("MSE : %.4f" % mse)
+
+roc = roc_auc_score(y_valid,pred_valid_y)
+print("ROC : %.4f" % roc)
 
 
 preds = net.predict_proba(test)[:,0] 
-
-
 submission = pd.read_csv('sample_submission.csv')
 submission["PredictedProb"] = preds
 submission.to_csv('submission.csv', index=False)
 
-
+print("Saving the Model")
+net.save_weights_to( './model/neural_net_250_150_80_25_drop.pkl' )
